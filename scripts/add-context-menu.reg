@@ -1,0 +1,22 @@
+Windows Registry Editor Version 5.00
+
+; === Open with DocViewer - .docx ===
+[HKEY_CURRENT_USER\Software\Classes\.docx\shell\DocViewer]
+@="Open with DocViewer"
+
+[HKEY_CURRENT_USER\Software\Classes\.docx\shell\DocViewer\command]
+@="\"C:\\Users\\itzda\\projects\\docviewer-electron\\node_modules\\.pnpm\\electron@33.4.11\\node_modules\\electron\\dist\\electron.exe\" \"C:\\Users\\itzda\\projects\\docviewer-electron\\out\\main\\index.js\" \"%1\""
+
+; === Open with DocViewer - .doc ===
+[HKEY_CURRENT_USER\Software\Classes\.doc\shell\DocViewer]
+@="Open with DocViewer"
+
+[HKEY_CURRENT_USER\Software\Classes\.doc\shell\DocViewer\command]
+@="\"C:\\Users\\itzda\\projects\\docviewer-electron\\node_modules\\.pnpm\\electron@33.4.11\\node_modules\\electron\\dist\\electron.exe\" \"C:\\Users\\itzda\\projects\\docviewer-electron\\out\\main\\index.js\" \"%1\""
+
+; === Open with DocViewer - .pdf ===
+[HKEY_CURRENT_USER\Software\Classes\.pdf\shell\DocViewer]
+@="Open with DocViewer"
+
+[HKEY_CURRENT_USER\Software\Classes\.pdf\shell\DocViewer\command]
+@="\"C:\\Users\\itzda\\projects\\docviewer-electron\\node_modules\\.pnpm\\electron@33.4.11\\node_modules\\electron\\dist\\electron.exe\" \"C:\\Users\\itzda\\projects\\docviewer-electron\\out\\main\\index.js\" \"%1\""

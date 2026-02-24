@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:docx.js.org)",
+      "Bash(cd /c/Users/itzda/projects/docviewer-electron && pnpm approve-builds electron esbuild 2>&1)",
+      "Bash(cd /c/Users/itzda/projects/docviewer-electron && pnpm install 2>&1)",
+      "Bash(cd /c/Users/itzda/projects/docviewer-electron && npx electron-vite build 2>&1)",
+      "Bash(true:*)",
+      "Bash(cd /c/Users/itzda/projects/docviewer-electron && npx electron --version 2>&1)",
+      "Bash(cd /c/Users/itzda/projects/docviewer-electron && node node_modules/.pnpm/electron@33.4.11/node_modules/electron/install.js 2>&1)",
+      "Bash(cd /c/Users/itzda/projects/docviewer-electron && node -e \"const sharp = require\\('sharp'\\); console.log\\('sharp ok'\\);\" 2>&1)",
+      "Bash(cd /c/Users/itzda/projects/docviewer-electron && node scripts/generate-icons.js 2>&1)",
+      "Bash(cd /c/Users/itzda/projects/docviewer-electron && node -e \"console.log\\(require\\('electron'\\)\\)\" 2>&1)",
+      "Bash(cd /c/Users/itzda/projects/docviewer-electron && pnpm add pdf-lib 2>&1)",
+      "Bash(cd:*)"
+    ]
+  }
+}

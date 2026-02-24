@@ -1,0 +1,5 @@
+Windows Registry Editor Version 5.00
+
+[-HKEY_CURRENT_USER\Software\Classes\.docx\shell\DocViewer]
+[-HKEY_CURRENT_USER\Software\Classes\.doc\shell\DocViewer]
+[-HKEY_CURRENT_USER\Software\Classes\.pdf\shell\DocViewer]

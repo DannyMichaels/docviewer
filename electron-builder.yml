@@ -1,0 +1,42 @@
+appId: com.docviewer.app
+productName: DocViewer
+directories:
+  buildResources: resources
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.*'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+win:
+  executableName: DocViewer
+  icon: resources/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+fileAssociations:
+  - ext: docx
+    name: Word Document
+    description: Microsoft Word Document
+    role: Editor
+    icon: resources/icon.ico
+  - ext: doc
+    name: Legacy Word Document
+    description: Microsoft Word Document (Legacy)
+    role: Editor
+    icon: resources/icon.ico
+  - ext: pdf
+    name: PDF Document
+    description: PDF Document
+    role: Viewer
+    icon: resources/icon.ico
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+  include: build/installer.nsh
