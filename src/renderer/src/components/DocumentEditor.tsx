@@ -14,7 +14,7 @@ import TableHeader from '@tiptap/extension-table-header'
 import { useEffect, useCallback, useRef } from 'react'
 import { useDocumentStore } from '../store/document-store'
 import ResizableImage from './ResizableImage'
-import TableContextMenu from './TableContextMenu'
+import EditorContextMenu from './EditorContextMenu'
 
 const ResizableImageExtension = Image.extend({
   addAttributes() {
@@ -70,6 +70,18 @@ export default function DocumentEditor({ onEditorReady }: DocumentEditorProps) {
     editorProps: {
       attributes: {
         class: 'tiptap'
+      },
+      handleClick: (_view, _pos, event) => {
+        // Ctrl+Click or Meta+Click opens links in system browser
+        if (event.ctrlKey || event.metaKey) {
+          const target = (event.target as HTMLElement).closest('a')
+          if (target?.href) {
+            event.preventDefault()
+            window.open(target.href, '_blank')
+            return true
+          }
+        }
+        return false
       }
     },
     onUpdate: ({ editor: ed }) => {
@@ -150,7 +162,7 @@ export default function DocumentEditor({ onEditorReady }: DocumentEditorProps) {
       <div className="editor-page">
         <EditorContent editor={editor} />
       </div>
-      <TableContextMenu editor={editor} />
+      <EditorContextMenu editor={editor} />
     </div>
   )
 }

@@ -15,7 +15,9 @@
       "Bash(cd /c/Users/itzda/projects/docviewer-electron && node scripts/generate-icons.js 2>&1)",
       "Bash(cd /c/Users/itzda/projects/docviewer-electron && node -e \"console.log\\(require\\('electron'\\)\\)\" 2>&1)",
       "Bash(cd /c/Users/itzda/projects/docviewer-electron && pnpm add pdf-lib 2>&1)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(cd /c/Users/itzda/projects/docviewer-electron && node scripts/generate-sample-pdf.js 2>&1)",
+      "Bash(ls:*)"
     ]
   }
 }

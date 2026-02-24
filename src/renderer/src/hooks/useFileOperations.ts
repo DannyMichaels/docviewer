@@ -51,11 +51,39 @@ export function useFileOperations(editor: Editor | null) {
     }
   }, [addTab])
 
+  const savePdfAs = useCallback(async (): Promise<boolean> => {
+    const tab = getActiveTab()
+    if (!tab || tab.type !== 'pdf' || !tab.pdfData) return false
+
+    const result = await window.api.savePdfAs({
+      pdfBase64: tab.pdfData,
+      signatures: (tab.signatures || []).map((s) => ({
+        page: s.page,
+        x: s.x,
+        y: s.y,
+        width: s.width,
+        dataUrl: s.dataUrl
+      })),
+      defaultPath: tab.filePath || tab.fileName
+    })
+
+    if (result && result.success && result.filePath) {
+      const newFileName = result.filePath.split(/[\\/]/).pop() || tab.fileName
+      updateTab(tab.id, { filePath: result.filePath, fileName: newFileName })
+      markClean(tab.id)
+      window.api.setTitle(`DocViewer - ${newFileName}`)
+      return true
+    }
+    return false
+  }, [getActiveTab, updateTab, markClean])
+
   const saveFileAs = useCallback(async (): Promise<boolean> => {
     const tab = getActiveTab()
-    if (!tab || !editorRef.current) return false
+    if (!tab) return false
 
-    if (tab.type === 'pdf') return false
+    if (tab.type === 'pdf') return savePdfAs()
+
+    if (!editorRef.current) return false
 
     const json = editorRef.current.getJSON()
     const result = await window.api.saveFileAs({
@@ -74,13 +102,15 @@ export function useFileOperations(editor: Editor | null) {
       return true
     }
     return false
-  }, [getActiveTab, updateTab, markClean])
+  }, [getActiveTab, updateTab, markClean, savePdfAs])
 
   const saveFile = useCallback(async (): Promise<boolean> => {
     const tab = getActiveTab()
-    if (!tab || !editorRef.current) return false
+    if (!tab) return false
 
-    if (tab.type === 'pdf') return false
+    if (tab.type === 'pdf') return savePdfAs()
+
+    if (!editorRef.current) return false
 
     const json = editorRef.current.getJSON()
 
@@ -95,7 +125,7 @@ export function useFileOperations(editor: Editor | null) {
     } else {
       return saveFileAs()
     }
-  }, [getActiveTab, markClean, saveFileAs])
+  }, [getActiveTab, markClean, saveFileAs, savePdfAs])
 
   const exportPdf = useCallback(async () => {
     const tab = getActiveTab()

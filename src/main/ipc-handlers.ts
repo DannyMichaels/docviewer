@@ -4,6 +4,7 @@ import { importDocx } from './conversion/docx-importer'
 import { exportDocx } from './conversion/docx-exporter'
 import { convertDocToDocx, isLibreOfficeAvailable } from './conversion/doc-converter'
 import { exportToPdf } from './conversion/pdf-exporter'
+import { bakePdfSignatures } from './conversion/pdf-signature'
 import { readFile } from 'fs/promises'
 
 export function registerIpcHandlers(mainWindow: BrowserWindow): void {
@@ -125,6 +126,36 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
       return { success: false, error: (error as Error).message }
     }
   })
+
+  // Save PDF with baked-in signatures
+  ipcMain.handle(
+    'file:save-pdf',
+    async (
+      _event,
+      args: {
+        pdfBase64: string
+        signatures: Array<{
+          page: number
+          x: number
+          y: number
+          width: number
+          dataUrl: string
+        }>
+        defaultPath?: string
+      }
+    ) => {
+      const filePath = await showExportPdfDialog(mainWindow, args.defaultPath)
+      if (!filePath) return null
+
+      try {
+        const buffer = await bakePdfSignatures(args.pdfBase64, args.signatures)
+        await writeFileBuffer(filePath, buffer)
+        return { success: true, filePath }
+      } catch (error) {
+        return { success: false, error: (error as Error).message }
+      }
+    }
+  )
 
   ipcMain.handle('file:read', async (_event, filePath: string) => {
     try {

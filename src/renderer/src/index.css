@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Ensure react-pdf text layer is selectable above signature overlays */
+.react-pdf__Page__textContent {
+  z-index: 20 !important;
+}
+
 * {
   margin: 0;
   padding: 0;

@@ -7,8 +7,7 @@ import {
   ZoomOut,
   RotateCw,
   Maximize,
-  PenLine,
-  Download
+  PenLine
 } from 'lucide-react'
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
@@ -40,6 +39,9 @@ export default function PdfViewer({ data, signatures = [], onSignaturesChange }:
   const [placing, setPlacing] = useState<string | null>(null) // signature dataUrl being placed
   const [dragging, setDragging] = useState<string | null>(null) // id of signature being dragged
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [resizing, setResizing] = useState<string | null>(null) // id of signature being resized
+  const [resizeStartX, setResizeStartX] = useState(0) // mouse X in pct when resize began
+  const [resizeStartWidth, setResizeStartWidth] = useState(0) // sig width in pct when resize began
   const pageRef = useRef<HTMLDivElement>(null)
 
   const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
@@ -90,20 +92,44 @@ export default function PdfViewer({ data, signatures = [], onSignaturesChange }:
     setDragOffset({ x: mouseXPct - sig.x, y: mouseYPct - sig.y })
   }
 
+  // Resize handle mousedown
+  const handleResizeMouseDown = (e: React.MouseEvent, sig: PdfSignature) => {
+    e.stopPropagation()
+    if (!pageRef.current) return
+    const rect = pageRef.current.getBoundingClientRect()
+    const mouseXPct = ((e.clientX - rect.left) / rect.width) * 100
+    setResizing(sig.id)
+    setResizeStartX(mouseXPct)
+    setResizeStartWidth(sig.width)
+  }
+
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!dragging || !pageRef.current) return
+    if (!pageRef.current) return
     const rect = pageRef.current.getBoundingClientRect()
     const mouseXPct = ((e.clientX - rect.left) / rect.width) * 100
     const mouseYPct = ((e.clientY - rect.top) / rect.height) * 100
 
-    const updated = signatures.map((s) =>
-      s.id === dragging ? { ...s, x: mouseXPct - dragOffset.x, y: mouseYPct - dragOffset.y } : s
-    )
-    onSignaturesChange?.(updated)
+    if (resizing) {
+      const delta = mouseXPct - resizeStartX
+      const newWidth = Math.max(5, Math.min(80, resizeStartWidth + delta))
+      const updated = signatures.map((s) =>
+        s.id === resizing ? { ...s, width: newWidth } : s
+      )
+      onSignaturesChange?.(updated)
+      return
+    }
+
+    if (dragging) {
+      const updated = signatures.map((s) =>
+        s.id === dragging ? { ...s, x: mouseXPct - dragOffset.x, y: mouseYPct - dragOffset.y } : s
+      )
+      onSignaturesChange?.(updated)
+    }
   }
 
   const handleMouseUp = () => {
     setDragging(null)
+    setResizing(null)
   }
 
   const deleteSig = (id: string) => {
@@ -113,12 +139,6 @@ export default function PdfViewer({ data, signatures = [], onSignaturesChange }:
   const handleSignatureSave = (dataUrl: string) => {
     setShowSignModal(false)
     setPlacing(dataUrl)
-  }
-
-  // Export PDF with signatures baked in via IPC
-  const handleExportSigned = async () => {
-    if (signatures.length === 0) return
-    await window.api.exportPdf({ defaultPath: 'signed-document.pdf', html: '' })
   }
 
   return (
@@ -219,9 +239,9 @@ export default function PdfViewer({ data, signatures = [], onSignaturesChange }:
                 left: `${sig.x}%`,
                 top: `${sig.y}%`,
                 width: `${sig.width}%`,
-                cursor: dragging === sig.id ? 'grabbing' : 'grab',
+                cursor: dragging === sig.id || resizing === sig.id ? 'grabbing' : 'grab',
                 userSelect: 'none',
-                zIndex: 10
+                zIndex: dragging === sig.id || resizing === sig.id ? 30 : 5
               }}
               onMouseDown={(e) => handleSigMouseDown(e, sig)}
             >
@@ -231,6 +251,7 @@ export default function PdfViewer({ data, signatures = [], onSignaturesChange }:
                 style={{ width: '100%', pointerEvents: 'none' }}
                 draggable={false}
               />
+              {/* Delete button */}
               <button
                 type="button"
                 onClick={(e) => {
@@ -258,6 +279,22 @@ export default function PdfViewer({ data, signatures = [], onSignaturesChange }:
               >
                 ×
               </button>
+              {/* Resize handle */}
+              <div
+                onMouseDown={(e) => handleResizeMouseDown(e, sig)}
+                style={{
+                  position: 'absolute',
+                  bottom: -4,
+                  right: -4,
+                  width: 12,
+                  height: 12,
+                  background: '#7c3aed',
+                  borderRadius: 2,
+                  cursor: 'ew-resize',
+                  border: '1.5px solid #fff',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                }}
+              />
             </div>
           ))}
         </div>

@@ -29,6 +29,11 @@ interface DocViewerAPI {
   saveFile: (args: { filePath: string; json: unknown }) => Promise<FileSaveResult>
   saveFileAs: (args: { json: unknown; defaultPath?: string }) => Promise<FileSaveResult | null>
   exportPdf: (args: { defaultPath?: string; html?: string }) => Promise<FileSaveResult | null>
+  savePdfAs: (args: {
+    pdfBase64: string
+    signatures: Array<{ page: number; x: number; y: number; width: number; dataUrl: string }>
+    defaultPath?: string
+  }) => Promise<FileSaveResult | null>
   readFile: (filePath: string) => Promise<FileReadResult>
   setTitle: (title: string) => Promise<void>
   onMenuNew: (callback: () => void) => () => void

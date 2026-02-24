@@ -13,6 +13,11 @@ const api = {
   saveFileAs: (args: { json: unknown; defaultPath?: string }) =>
     ipcRenderer.invoke('file:save-as', args),
   exportPdf: (args: { defaultPath?: string; html?: string }) => ipcRenderer.invoke('file:export-pdf', args),
+  savePdfAs: (args: {
+    pdfBase64: string
+    signatures: Array<{ page: number; x: number; y: number; width: number; dataUrl: string }>
+    defaultPath?: string
+  }) => ipcRenderer.invoke('file:save-pdf', args),
   readFile: (filePath: string) => ipcRenderer.invoke('file:read', filePath),
   setTitle: (title: string) => ipcRenderer.invoke('app:set-title', title),
 

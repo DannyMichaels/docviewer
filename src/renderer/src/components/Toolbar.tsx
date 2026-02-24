@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Editor } from '@tiptap/react'
 import {
   Bold,
@@ -63,6 +63,10 @@ function Divider() {
 export default function Toolbar({ editor }: ToolbarProps) {
   // Force re-render on every editor transaction (selection change, format toggle, etc.)
   const [, setTick] = useState(0)
+  const [linkPopover, setLinkPopover] = useState(false)
+  const [linkUrl, setLinkUrl] = useState('')
+  const linkInputRef = useRef<HTMLInputElement>(null)
+
   useEffect(() => {
     if (!editor) return
     const handler = () => setTick((t) => t + 1)
@@ -90,20 +94,36 @@ export default function Toolbar({ editor }: ToolbarProps) {
     input.click()
   }
 
-  const setLink = () => {
-    if (editor.isActive('link')) {
+  const openLinkPopover = () => {
+    // Pre-populate with existing link URL if cursor is on a link
+    const existing = editor.getAttributes('link').href || ''
+    setLinkUrl(existing)
+    setLinkPopover(true)
+    setTimeout(() => linkInputRef.current?.focus(), 50)
+  }
+
+  const applyLink = () => {
+    const url = linkUrl.trim()
+    if (!url) {
+      // Empty URL = remove link
       editor.chain().focus().unsetLink().run()
-      return
-    }
-    const { from, to } = editor.state.selection
-    const hasSelection = from !== to
-    const url = prompt('Enter URL:')
-    if (!url) return
-    if (hasSelection) {
-      editor.chain().focus().setLink({ href: url }).run()
     } else {
-      editor.chain().focus().insertContent(`<a href="${url}">${url}</a>`).run()
+      const { from, to } = editor.state.selection
+      const hasSelection = from !== to
+      if (hasSelection) {
+        editor.chain().focus().setLink({ href: url }).run()
+      } else {
+        editor.chain().focus().insertContent(`<a href="${url}">${url}</a>`).run()
+      }
     }
+    setLinkPopover(false)
+    setLinkUrl('')
+  }
+
+  const removeLink = () => {
+    editor.chain().focus().unsetLink().run()
+    setLinkPopover(false)
+    setLinkUrl('')
   }
 
   const currentHeading = (() => {
@@ -214,9 +234,90 @@ export default function Toolbar({ editor }: ToolbarProps) {
 
       <Divider />
 
-      <Btn onClick={setLink} active={editor.isActive('link')} tooltip="Insert Link">
-        <Link size={s} />
-      </Btn>
+      <div className="toolbar-btn-wrapper" style={{ position: 'relative' }}>
+        <button
+          type="button"
+          onClick={openLinkPopover}
+          className={`toolbar-btn ${editor.isActive('link') ? 'active' : ''}`}
+        >
+          <Link size={s} />
+        </button>
+        <span className="toolbar-tooltip">Insert Link</span>
+        {linkPopover && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              marginTop: 6,
+              background: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: 8,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+              padding: 10,
+              zIndex: 100,
+              display: 'flex',
+              gap: 6,
+              alignItems: 'center',
+              minWidth: 320
+            }}
+          >
+            <input
+              ref={linkInputRef}
+              type="text"
+              value={linkUrl}
+              onChange={(e) => setLinkUrl(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyLink()
+                if (e.key === 'Escape') { setLinkPopover(false); editor.commands.focus() }
+              }}
+              placeholder="https://..."
+              style={{
+                flex: 1,
+                padding: '6px 10px',
+                fontSize: 13,
+                border: '1px solid #d1d5db',
+                borderRadius: 6,
+                outline: 'none'
+              }}
+            />
+            <button
+              type="button"
+              onClick={applyLink}
+              style={{
+                padding: '6px 12px',
+                fontSize: 12,
+                fontWeight: 500,
+                background: '#7c3aed',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 6,
+                cursor: 'pointer'
+              }}
+            >
+              Apply
+            </button>
+            {editor.isActive('link') && (
+              <button
+                type="button"
+                onClick={removeLink}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  background: '#ef4444',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 6,
+                  cursor: 'pointer'
+                }}
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        )}
+      </div>
       <Btn onClick={addImage} tooltip="Insert Image">
         <Image size={s} />
       </Btn>
